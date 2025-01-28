@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #generatedImage {
+            margin-top: 20px;
+            display: none;
+            max-width: 100%;
+            height: auto;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Text to Image Generator</h1>
+    <input type="text" id="prompt" placeholder="Enter a prompt to generate an image..." />
+    <button onclick="generateImage()">Generate Image</button>
+
+    <div id="errorMessage" class="error"></div>
+    <img id="generatedImage" src="" alt="Generated Image" />
+
+</div>
+
+<script>
+    async function generateImage() {
+        const prompt = document.getElementById("prompt").value;
+        const errorMessage = document.getElementById("errorMessage");
+        const generatedImage = document.getElementById("generatedImage");
+
+        // Clear previous errors or image
+        errorMessage.textContent = '';
+        generatedImage.style.display = 'none';
+
+        if (!prompt) {
+            errorMessage.textContent = "Please enter a prompt!";
+            return;
+        }
+
+        try {
+            // Send a POST request to the Flask server with the prompt
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                errorMessage.textContent = data.error;
+            } else {
+                // If image is generated, display it
+                generatedImage.src = data.image_url;
+                generatedImage.style.display = 'block';
+            }
+        } catch (error) {
+            errorMessage.textContent = "Error generating image. Please try again later.";
+        }
+    }
+</script>
+
+</body>
+</html>
